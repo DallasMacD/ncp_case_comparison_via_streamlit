@@ -207,7 +207,6 @@ The 6 distinct sections are explained in more detail below:
 
 '''
 
-import streamlit as st
 import tkinter as tk
 import tkfilebrowser
 import pandas as pd
@@ -523,7 +522,6 @@ def extract_csv_metrics(directory: str, case_name: str, csv_metrics_dict: dict):
 	# Read each file specified in the csv_metrics_dict and store the results in the csv_metrics_df DataFrame
 	for metric, parameters in csv_metrics_dict.items():
 		file_path = f'{directory}/{parameters["CSV File Name"]}'
-		st.write(file_path)
 		# Check if file exists prior to opening
 		if os.path.isfile(file_path):
 			temp_df = pd.read_csv(file_path, skiprows=3, index_col=0).iloc[:, 2:]
