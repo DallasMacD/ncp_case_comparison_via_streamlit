@@ -1,0 +1,61 @@
+Values of the Objective Function Terms,(k$)
+Future Cost,0
+Future Benefit,0
+Thermal Operative Cost,-107737.123248901
+Start-up Cost,-2176
+Fixed Cost,0
+Minimum Outflow Violation,0
+Deficit Cost,-306472.505211996
+Spillage Cost,-2.06544976114338
+Hydro O&M Cost,-2791.23871620303
+Generation Constraint Violation,0
+Loss Penalty,-0.0842906391157611
+Revenue,0
+Hydro Energy Bid,0
+Joint Reserve Single Bid,0
+Joint Reserve Purchase,0
+Alert Storage Violation,-26821.1210108933
+Minimum Operative Storage Violation,0
+Maximum Operative Storage Violation,0
+Minimum Total Outflow Violation,0
+Maximum Total Outflow Violation,0
+Irrigation Violation,0
+Evaporation Violation,0
+Hydro Unit Start-up Cost,0
+Steam Deficit Cost,0
+Boiler Cost,0
+Elastic Demand,0
+Elastic Offer,0
+Individual Reserve Violation,0
+Hydro Unit Generation Constraint Violation,0
+Renewable Over Generation,0
+Shutdown Cost,0
+Combined Cycle Generator Coupling Cost,0
+Hydro Generation Constraint Violation,0
+Thermal Generation Constraint Violation,0
+Total CO2 Emission Cost,-54459.5362699939
+Total NOX Emission Cost,0
+Total SOX Emission Cost,0
+Target Storage Violation,0
+Hydro Minimum Generation Constraint Violation,0
+Minimum Spilling Violation,0
+Electricity Production Smoothing Violation,0
+Renewable O&M Cost,-5.84784000000019
+Transmission Cost,0
+Battery O&M Cost,0
+Hydro Production Grid,-5.34523035848844
+Fuel Transition Cost,0
+Battery Generation Constraint Violation,0
+Hydro Unit Inertia Startup Cost,0
+Hydro Unit Synchronous Condenser Running Mode,0
+Spillway Rating Penalty,0
+Infiltration Violation,0
+FCAS Violation,0
+Bypass Valve Violation,0
+Time Average Constraint Violation,0
+Generic Constraint Violation,0
+Individual Terminal Function,0
+Joint Reserve Multiple Bid,0
+Gas Emission Penalty,0
+AC Circuit Overload Penalty,0
+Battery Energy Bid,0
