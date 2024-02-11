@@ -518,7 +518,7 @@ def extract_csv_metrics(directory: str, case_name: str, csv_metrics_dict: dict):
 		csv_metrics_df: A DataFrame containing the metrics specified in csv_metrics_dict, with Hour as the index and Case -> Metric Name -> Agent as the multiindex column levels
 	
 	'''
-	st.write(csv_metrics_dict)
+	st.write(directory)
 	# Create an empty placeholder DataFrame to store the csv metrics specified in csv_metrics_dict
 	csv_metrics_df = pd.DataFrame()
 	# Read each file specified in the csv_metrics_dict and store the results in the csv_metrics_df DataFrame
