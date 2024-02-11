@@ -1,0 +1,629 @@
+/* Table of contents
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+  - Variables
+  - Class Styles
+    - Buttons
+    - Text Inputs
+    - Number Inputs
+    - Multiselects
+    - Thematic Breaks (Horizontal Rule, Divider)
+    - Plotly Charts
+    - Expanders
+    - Checkboxes
+    - Disable Alert Status
+  - HTML, Body, and App
+  - Header and Toolbar Menu
+  - Sidebar Navigation Menu
+  - Main Content Area
+  - Summary Table Page
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+
+/* Variables
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+/* Link to Manitoba Hydro colour palettes: https://mhcloud.sharepoint.com/sites/DigitalAssetsCentre/SitePages/Brand-colour-graphic-elements-gradients.aspx */
+
+/* Configuration settings applied when running Start_Streamlit.py: 
+    --theme.base="light" 
+    --theme.primaryColor="#0079C1" 
+    --theme.backgroundColor="#FFFFFF" 
+    --theme.secondaryBackgroundColor="#E5F5FD" 
+    --theme.textColor="#262730" 
+    --theme.font="sans serif" 
+*/
+
+:root {
+    --theme-colour: #0079C1; /* Used in border, side navigation menu open/close icon, buttons, table headers, table scrollbars, multiselects, and expanders */
+    --theme-colour-hover: #0065AD; /* Used in buttons, table scrollbars, and expanders hover states */
+    --theme-colour-active: #005098; /* Used in buttons and table scrollbars active states */
+    --theme-colour-secondary: #00AEEF; /* Used in progress bars and checkboxes */
+    
+    --background-colour: #FFFFFF; /* Used as the background of the header toolbar menu/modal popup, side navigation menu, page containers, table borders, table data cells, and table scrollbar track borders  */
+    --background-colour-secondary: #E5F5FD; /* Used as the background of the Main Content Area, empty progress bars, table scrollbar tracks, text inputs and multiselect inputs (Defined in Start_Streamlit.py as well) */
+  
+    --text-colour: #262730; /* Commonly seen as rgb(38, 39, 48) */
+    --text-colour-contrast: #FFFFFF;
+    --text-colour-contrast-secondary: #E5F5FD;
+    --text-colour-theme: #0079C1;
+
+    --box-shadow: #63636333 0px 10px 30px 0px;
+    --box-shadow-hover: #63636366 0px 10px 30px 0px;
+    --box-shadow-focus-not-active: inset 0 1px 1px #00000013, 0 0 0 3px #C7EAFB;
+
+    --fonts: 'Calibri', Arial, Tahoma, sans-serif;
+    --fonts-mono: 'Roboto Mono', 'Lucida Console', Courier, monospace;
+  }
+  
+/* Class Styles
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+  /* –– Buttons ––––––––––––––––––––––––––––––––––––––– */
+  [data-testid='baseButton-secondary'] {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0rem;
+    min-height: 38.4px;
+    color: var(--text-colour-contrast);
+    width: 100%;
+    user-select: none;
+    background-color: var(--theme-colour);
+    border: none;
+  }
+
+  [data-testid='baseButton-secondary']:hover {
+    color: var(--text-colour-contrast);
+    background-color: var(--theme-colour-hover);
+  }
+
+  [data-testid='baseButton-secondary']:active {
+    color: var(--text-colour-contrast);
+    background-color: var(--theme-colour-active);
+  }
+
+  [data-testid='baseButton-secondary']:focus:not(:active) {
+    color: var(--text-colour-contrast);
+    background-color: var(--theme-colour-hover);
+    box-shadow: var(--box-shadow-focus-not-active);
+    outline: 0;
+  }
+
+  /* –– Text Inputs ––––––––––––––––––––––––––––––––––– */
+  [data-baseweb='input'] {
+    border: none;
+    border-radius: 0;
+    min-height: 38.4px;
+  }
+
+  [data-baseweb='base-input'] {
+    background-color: var(--background-colour-secondary);
+  }
+
+  /* –– Number Inputs ––––––––––––––––––––––––––––––––– */
+  button.step-up {
+    display: none;
+  }
+
+  button.step-down {
+    display: none;
+  }
+
+  /* –– Multiselects –––––––––––––––––––––––––––––––––– */
+  .stMultiSelect [data-testid='stWidgetLabel'] { /* Multiselect label */
+    margin-bottom: 0;
+  }
+
+  .stMultiSelect [data-testid='stWidgetLabel'] p { /* Multiselect label text */
+    font-weight: bold;
+  }
+
+  .stMultiSelect [data-baseweb='select'] > div { /* Multiselect container */
+    border: none;
+    border-radius: 0;
+    background-color: var(--background-colour-secondary);
+  }
+
+  .stMultiSelect [data-baseweb='tag'] { /* Multiselect selection container*/
+    max-width: 48%;
+    background: var(--theme-colour);
+    border-radius: 0;
+  }
+
+  .stMultiSelect [data-baseweb='tag'] > span { /* Multiselect selection container text*/
+    max-width: 100%;
+    white-space: pre;
+    font-family: var(--fonts-mono);
+    font-size: 14px;
+  }
+
+  [data-testid='tooltipHoverTarget'] > div > div { /* Multiselect dropdown menu */
+    white-space: pre;
+    font-family: var(--fonts-mono);
+    font-size: 14px;
+  }
+
+  /* –– Thematic Breaks (Horizontal Rule, Divider) –––– */
+  hr {
+    margin: 0rem;
+  }
+
+  /* –– Plotly Charts ––––––––––––––––––––––––––––––––– */
+  .stPlotlyChart {
+    width: 100%;
+  }
+
+  .stPlotlyChart > div > div {
+    width: 100%;
+  }
+
+  .stPlotlyChart > div > div > svg {
+    width: 100%;
+  }
+
+  [data-testid='StyledFullScreenButton'][title='View fullscreen'] { /* Full Screen button */
+    right: 0rem;
+    top: -2rem;
+  }
+
+  /* –– Expanders ––––––––––––––––––––––––––––––––––––– */
+  [data-testid='stExpander'] details { /* Expander container */
+    border: none;
+    border-radius: 0;
+    background: var(--theme-colour);
+    color: var(--text-colour-contrast);
+  }
+
+  [data-testid='stExpander'] summary { /* Expander text container */
+    max-height: 38.4px;
+  }
+
+  [data-testid='stExpander'] summary:hover { /* Expander text container */
+    color: var(--text-colour-contrast);
+    background: var(--theme-colour-hover);
+  }
+
+  [data-testid='stExpander'] summary:hover > svg { /* Expander text container chevron */
+    color: var(--text-colour-contrast);
+    fill: var(--text-colour-contrast);
+  }
+
+  [data-testid='stExpander'] p { /* Expander text */
+    font-size: 1rem;
+  }
+
+  [data-testid='stExpanderDetails'] [data-testid='textInputRootElement'] { /* Text Input container inside Expander */
+    border: none;
+  }
+
+  [data-testid='stExpanderDetails'] [data-testid='textInputRootElement'] input { /* Text Input text inside Expander */
+    cursor: default;
+    background: var(--theme-colour);
+    color: var(--text-colour-contrast);
+    -webkit-text-fill-color: var(--text-colour-contrast);
+    text-align: right;
+  }
+
+  [data-testid='stExpanderDetails'] [data-testid='stNumberInputContainer'] { /* Number Input container inside Expander */
+    border: none;
+    border-radius: 0;
+  }
+
+  /* –– Checkboxes –––––––––––––––––––––––––––––––––––– */
+  .stCheckbox [data-baseweb='checkbox'] {
+    padding-right: 0px;
+  }
+
+  .stCheckbox span {
+    width: 38.4px;
+    height: 38.4px;
+    border-radius: 0;
+    border: 1px solid var(--theme-colour);
+    margin: 0;
+  }
+
+  .stCheckbox span:has(+ input[aria-checked='true']) { /* Change checkbox background colour when checked */
+    background-color: var(--theme-colour-secondary);
+  }
+
+  .stCheckbox [data-testid='stMarkdownContainer'] { /* Checkbox Label */
+    line-height: 38.4px;
+  }
+
+  /* –– Disable Alert Status –––––––––––––––––––––––––– */
+  .stAlert {
+    display: none;
+  }
+
+  [data-testid='column'] [data-testid='stVerticalBlock']:has(.stAlert) {
+    gap: 0;
+  }
+
+ /* HTML, Body, and App
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+  /* –– HTML –––––––––––––––––––––––––––––––––––––––––– */
+  html {
+    font-size: 100%; /* By default (100%), 1rem is equal to 16px. With font-size at 62.5% (10/16), 1rem is equal to 10px */
+  }
+  
+  /* –– Body –––––––––––––––––––––––––––––––––––––––––– */
+  body {
+    overflow-x: hidden;
+    margin: 0px;
+    width: 100vw;
+    height: 100vh;
+    font-family: var(--fonts);
+  }
+
+/* –– App ––––––––––––––––––––––––––––––––––––––––––– */
+  .stApp {
+    position: absolute;
+    inset: 0px;
+    overflow: hidden;
+    background: var(--background-colour-secondary);
+    color: var(--text-colour-theme);
+    color-scheme: light;
+  }
+
+
+/* Header and Toolbar Menu
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+  /* –– Header –––––––––––––––––––––––––––––––––––––––– */
+  .stApp header {
+    height: 4rem;
+    background: var(--theme-colour);
+    /* background-image: url(http://vignette4.wikia.nocookie.net/someordinarygamers/images/a/a1/Sanic.gif/revision/latest?cb=20150624143958); */
+    background-image: url(https://png2.cleanpng.com/sh/91738c91cb435ac4aed6809e8af72931/L0KzQYm3VMI3N5dofZH0aYP2gLBuTfJwfZ9phNd8cz3vf7j2TfNwdaFmhus2YoLkfrW0gBhqbZcyfepuY4X3ecfsTcVibWJrS9VrN3PpcoK5TsY5QWQ7Tqg6MUW1RIi8V8Q2OWY2Sas3cH7q/kisspng-boundless-logo-company-brand-chief-executive-5ae1f3cb7cfb12.6893666115247574515119.png);
+    background-repeat: no-repeat;
+    background-position-x: 0.5rem;
+    background-position-y: 0.5rem;
+    background-size: auto 3rem;
+  }
+
+  .stApp header::before {
+    content: "NCP Case Comparison Tool";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-colour-contrast);
+  }
+
+
+  /* –– Header Decoration ––––––––––––––––––––––––––––– */
+  #stDecoration {
+    height: 0px;
+    background: var(--theme-colour);
+  }
+
+  /* –– Header Toolbar –––––––––––––––––––––––––––––––– */
+  .stApp header [data-testid='stToolbar'] {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+
+  /* –– Header Toolbar Image –––––––––––––––––––––––––– */
+  .stApp header [data-testid='stToolbar'] button > svg {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--text-colour-contrast);
+  }
+
+/* –– Header Toolbar Menu ––––––––––––––––––––––––––– */
+  [data-testid='stMainMenuPopover'] {
+    top: 4.5rem;
+    left: auto;
+    right: 0.5rem;
+    transform: none; /* Overwrite transform done automatically by Streamlit*/
+    box-shadow: var(--box-shadow);
+    border-radius: 0;
+    margin: 0;
+    width: 12rem;
+    background: var(--background-colour);
+  }
+
+/* –– Header Toolbar Menu List –––––––––––––––––––––– */
+  [data-testid='stMainMenuPopover'] ul {
+    border: none;
+  }
+
+/* –– Header Toolbar Menu List Item Divider ––––––––– */
+  [data-testid='stMainMenuPopover'] [data-testid='main-menu-divider'] {
+    margin: 0.5rem 0px;
+  }
+
+/* –– Modal Popup ––––––––––––––––––––––––––––––––––– */
+  [data-testid='stModal'] [role='dialog'] {
+    border: none;
+    border-radius: 0;
+    background: var(--background-colour);
+  }
+
+  /* –– Header Status - Source File Changed ––––––––––– */
+  [data-testid='stStatusWidget'] {
+    color: var(--text-colour-contrast);
+  }
+
+  [data-testid='stStatusWidget'] label {
+    color: var(--text-colour-contrast-secondary);
+  }
+
+  [data-testid='stStatusWidget'] svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--text-colour-contrast);
+  }
+
+
+/* Sidebar Navigation Menu
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+  /* –– Sidebar ––––––––––––––––––––––––––––––––––––––– */
+  [data-testid='stSidebar'] {
+    z-index: 999991;
+    top: 4rem;
+    transition: transform 300ms ease 0s, min-width 300ms ease 0s, max-width 300ms ease 0s;
+    min-width: 20rem;
+    max-width: 20rem;
+    background: var(--background-colour);
+  }
+
+  [data-testid='stSidebarContent'] { /* Align Navigation Items at the top of the Sidebar and User Content Items at the bottom*/
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: calc(100vh - 4rem);
+  }
+
+  /* –– Sidebar Navigation Items –––––––––––––––––––––– */
+  [data-testid='stSidebarNavItems'] {
+    overflow: overlay;
+    margin: 0px;
+    max-height: 75vh;
+    padding: 1rem 3rem 1rem 1rem;
+    list-style: none;
+  }
+
+  [data-testid='stSidebarNavItems'] a {
+    margin: 0rem;
+    border-radius: 0px;
+    height: 4rem;
+    padding: 1rem;
+  }
+
+  [data-testid='stSidebarNavSeparator'] {
+    display: none;
+  }
+
+  /* –– Sidebar User Content Items –––––––––––––––––––– */
+  [data-testid='stSidebarUserContent'] {
+    padding: 1rem 3rem 1rem 1rem;
+  }
+
+  /* –– Collapse Sidebar –––––––––––––––––––––––––––––– */
+  [data-testid='stSidebar'][aria-expanded='true'] {
+    transform: none; /* Transform attribute is None when Sidebar is open */
+  }
+
+  [data-testid='stSidebar'][aria-expanded='false'] {
+    transform: translateX(-18rem); /* Moves Sidebar off screen when collapse button is pressed */ 
+  }
+
+  /* –– Collapse Sidebar Button ––––––––––––––––––––––– */
+  [data-testid='stSidebarContent'] > div:first-of-type {
+    position: absolute;
+    z-index: 1;
+    top: calc(100vh / 2 - 4rem);
+    right: 0rem;
+  }
+
+  [data-testid='stSidebarContent'] > div:first-of-type > button {
+    margin: 0rem;
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0rem;
+    background-color: transparent;
+    color: var(--theme-colour);
+  }
+
+  [data-testid='stSidebarContent'] > div:first-of-type > button > svg {
+    height: 3rem; /* Adjust shape of svg to house updated button shape */
+  }
+
+  /* –– Collapse Sidebar Button Arrow Direction ––––––– */
+  [data-testid='stSidebar'][aria-expanded='true'] [data-testid='stSidebarContent'] > div:first-of-type > button > svg > path {
+    d: path('M25 0 L15 0 L0 20 L15 40 L25 40 L10 20 Z'); /* Change shape of collapse button */
+  }
+
+  [data-testid='stSidebar'][aria-expanded='false'] [data-testid='stSidebarContent'] > div:first-of-type > button > svg > path {
+    d: path('M0 0 L10 0 L25 20 L10 40 L0 40 L15 20 Z'); /* Change shape of expand button */
+  }
+
+  [data-testid='collapsedControl'] {
+    display: none; /* Hide alternate collapse button */
+  }
+
+  /* –– Sidebar Progress Bar –––––––––––––––––––––––––– */
+  [data-baseweb='progress-bar'] > div > div { /* Progress Bar progress background colour*/
+    border-radius: 1px;
+    height: 1rem;
+    background-color: var(--background-colour-secondary);
+  }
+
+  [data-baseweb='progress-bar'] > div > div > div { /* Progress Bar progress bar colour*/
+    border-radius: 1px;
+    height: 1rem;
+    background-color: var(--theme-colour-secondary);
+  }
+
+/* Main Content Area
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+  /* –– Main Content Area ––––––––––––––––––––––––––––– */
+  [data-testid='stSidebar'][aria-expanded='true'] + .main {
+    transform: none; /* Transform attribute is None when Sidebar is open */
+    transition: transform 300ms ease 0s, min-width 300ms ease 0s, max-width 300ms ease 0s;
+    width: calc(100vw - 20rem);
+    min-width: calc(100vw - 20rem);
+  }
+
+  [data-testid='stSidebar'][aria-expanded='false'] + .main {
+    transform: translateX(-18rem); /* Expands the Main Content Area when the Sidebar is moved off screen */ 
+    transition: transform 300ms ease 0s, min-width 300ms ease 0s, max-width 300ms ease 0s;
+    width: calc(100vw - 2rem);
+    min-width: calc(100vw - 2rem);
+  }
+
+  [data-testid='block-container'] {
+    padding: 4rem 1rem 1rem 1rem;
+  }
+
+  /* –– Container ––––––––––––––––––––––––––––––––––––– */
+  [data-testid='stVerticalBlock'] > [data-testid='stVerticalBlockBorderWrapper'] {
+    padding: 1rem;
+    background-color: var(--background-colour);
+  }
+
+/* Summary Table Page
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
+  /* –– Case Summary Table –––––––––––––––––––––––––––– */
+  [data-testid='stMarkdownContainer']:has(> table) {
+    overflow-x: auto;
+    overflow-y: auto;
+    margin: 0;
+    width: 100%;
+    max-height: calc(100vh - 10rem);
+    padding: 0;
+  }
+  
+  table {
+    margin: 0;
+    border: none;
+    border-top: 1px solid var(--background-colour);
+    border-collapse: separate;
+    border-spacing: 0px;
+    width: 100%;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  
+  /* –– Case Summary Table Header ––––––––––––––––––––– */
+  table thead th {
+    border-top: none !important;
+    border-bottom: 1px solid var(--background-colour) !important;
+    border-left: 1px solid var(--background-colour) !important;
+    border-right: none !important;
+    min-width: 6rem;
+    height: 38px;
+    background-color: var(--theme-colour);
+    text-align: center;
+    white-space: nowrap;
+    color: var(--text-colour-contrast);
+    
+  }
+  
+  /* –– Case Summary Table Sticky Header –––––––––––––– */
+  table thead tr:first-child th { /* 1st header row */
+    position: sticky;
+    z-index: 1;
+    top: 0px;
+  }
+
+  table thead tr:nth-child(2) th { /* 2nd header row */
+    position: sticky;
+    z-index: 1;
+    top: 38px;
+  }
+
+  table thead tr:first-child th:first-child { /* 1st column of 1st header row */
+    position: sticky;
+    z-index: 2;
+    left: 0px;
+    border-right: 1px solid var(--background-colour) !important;
+  }
+
+  table thead tr:nth-child(2) th:first-child { /* 1st column of 2nd header row */
+    position: sticky;
+    z-index: 2;
+    left: 0px;
+    border-right: 1px solid var(--background-colour) !important;
+  }
+
+  table thead th:nth-child(2) {
+    border-left: 0px !important;
+  }
+
+  /* –– Case Summary Table 1st Column ––––––––––––––––– */
+  table tbody th {
+    border-top: none !important;
+    border-bottom: 1px solid var(--background-colour) !important;
+    border-left: 1px solid var(--background-colour) !important;
+    border-right: none !important;
+    min-width: 6rem;
+    height: 38px;
+    background-color: var(--theme-colour);
+    text-align: left;
+    white-space: nowrap;
+    color: var(--text-colour-contrast);
+  }
+
+  /* –– Case Summary Table Sticky 1st Column –––––––––– */
+  table tbody th { /* 1st column of table body */
+    position: sticky;
+    z-index: 1;
+    left: 0px;
+    border-right: 1px solid var(--background-colour) !important;
+  }
+
+  /* –– Case Summary Table Data Cells ––––––––––––––––– */
+  table td {
+    border-top: none !important;
+    border-bottom: 1px solid var(--background-colour-secondary) !important;
+    border-left: none !important;
+    border-right: none !important;
+    min-width: 100px;
+    height: 38px;
+    background-color: var(--background-colour);
+    text-align: right;
+    color: var(--text-colour);
+  }
+
+  /* –– Case Summary Table Scrollbars ––––––––––––––––– */
+  [data-testid='stMarkdownContainer']:has(> table)::-webkit-scrollbar {
+    border-radius: 0;
+    height: 1rem;
+    width: 1rem;
+    background-color: var(--background-colour-secondary);
+  }
+
+  [data-testid='stMarkdownContainer']:has(> table)::-webkit-scrollbar:horizontal {
+    border-top: 1px solid var(--background-colour);
+  }
+
+  [data-testid='stMarkdownContainer']:has(> table)::-webkit-scrollbar:vertical {
+    border-left: 1px solid var(--background-colour);
+  }
+
+  [data-testid='stMarkdownContainer']:has(> table)::-webkit-scrollbar-corner {
+    border: 1px solid var(--background-colour-secondary);
+  }
+
+  [data-testid='stMarkdownContainer']:has(> table)::-webkit-scrollbar-thumb {
+    border: 1px solid var(--background-colour);
+    border-radius: 0;
+    background-color: var(--theme-colour);
+  }
+  
+  [data-testid='stMarkdownContainer']:has(> table)::-webkit-scrollbar-thumb:hover { /* Hover over the scrollbar */
+    border: 1px solid var(--background-colour);
+    border-radius: 0;
+    background-color: var(--theme-colour-hover);
+  }
+
+  [data-testid='stMarkdownContainer']:has(> table):hover::-webkit-scrollbar-thumb { /* Hover over the table */
+    border: 1px solid var(--background-colour);
+    border-radius: 0;
+    background-color: var(--theme-colour-hover);
+  }
+  
+  [data-testid='stMarkdownContainer']:has(> table)::-webkit-scrollbar-thumb:active {
+    border: 1px solid var(--background-colour);
+    border-radius: 0;
+    background-color: var(--theme-colour-active);
+  }
