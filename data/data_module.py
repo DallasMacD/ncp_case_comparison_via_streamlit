@@ -739,11 +739,11 @@ def select_cases():
 	
 	'''
 	# Tkinter not working properly when deployed via Streamlit, therefore, automatically select the following cases
-	case_directory_dict = {fr'Case 1\Jan\1941': fr'..\NCP Cases\Case 1\Jan\1941',
-				fr'Case 2\Jan\1941': fr'..\NCP Cases\Case 2\Jan\1941',
-				fr'Case 3\Jan\1941': fr'..\NCP Cases\Case 3\Jan\1941',
-				fr'Case 4\Jan\1941': fr'..\NCP Cases\Case 4\Jan\1941',
-				fr'Case 5\Jan\1941': fr'..\NCP Cases\Case 5\Jan\1941'}
+	case_directory_dict = {fr'Case 1\Jan\1941': fr'DallasMacD.github.io\ncp_case_comparison_via_streamlit\NCP Cases\Case 1\Jan\1941',
+				fr'Case 2\Jan\1941': fr'DallasMacD.github.io\ncp_case_comparison_via_streamlit\NCP Cases\Case 2\Jan\1941',
+				fr'Case 3\Jan\1941': fr'DallasMacD.github.io\ncp_case_comparison_via_streamlit\NCP Cases\Case 3\Jan\1941',
+				fr'Case 4\Jan\1941': fr'DallasMacD.github.io\ncp_case_comparison_via_streamlit\NCP Cases\Case 4\Jan\1941',
+				fr'Case 5\Jan\1941': fr'DallasMacD.github.io\ncp_case_comparison_via_streamlit\NCP Cases\Case 5\Jan\1941'}
 	return case_directory_dict
 	
 	# #-----------------------User Select Network Location----------------------#
