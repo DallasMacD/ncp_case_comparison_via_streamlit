@@ -738,157 +738,165 @@ def select_cases():
 		case_directory_dict: A dictionary of all selected NCP case names as keys and their respective directories as items
 	
 	'''
-	#-----------------------User Select Network Location----------------------#
-	# List of available network locations
-	network_list = [fr'C:\Users\Dallas\Documents\Streamlit Project']
-
-	# Initialize the tk.TK() interpreter and create the root window
-	root = tk.Tk()
-	root.title('Network Selection')
-	root.attributes('-topmost', True)
-
-	def save_network_location_button():
-		global selected_network
-		selected_network = var.get()
-		root.quit()
-		root.destroy()
-	
-	# Setup frame and style
-	frame = tk.Frame(root, bg='#FFFFFF', highlightbackground='#000000', highlightthickness=1)
-	frame.grid(row=0, column=0, padx=5, pady=5, sticky='n')
-	tk.Label(frame, text='Network Location', bg='#0079C1', fg='white', width=50).pack(expand=True, fill='x', anchor='n')
-
-	# Add a list of available network locations for the user to choose from
-	var = tk.StringVar(root, network_list[0])
-	for network_location in network_list:
-		tk.Radiobutton(frame, text=network_location, value=network_location, variable=var, bg='white').pack(fill='x', anchor='nw')
-	
-	# Add a Save button at the bottom of the tkinter window
-	frame_button = tk.Frame(root, bg='#FFFFFF', highlightbackground='#000000', highlightthickness=1)
-	frame_button.grid(row=1, column=0, columnspan=1, sticky=tk.W+tk.E, padx=5, pady=5)
-	btn = tk.Button(frame_button, text='Save', command=save_network_location_button, bg='#0079C1', fg='white')
-	btn.pack(fill='x')
-
-	# Remain in this loop until root.quit() is called
-	root.mainloop()
-
-	# Check that selected_network contains a value before continuing
-	if 'selected_network' not in globals():
-		return None
-
-	#----------------------------User Select Cases----------------------------#
-	# Initialize the tk.TK() interpreter and create the root window
-	root = tk.Tk()
-	root.attributes('-topmost', True)
-	selected_folders_tuple = tkfilebrowser.askopendirnames(parent=root, title='Select NCP cases to compare', initialdir=selected_network, foldercreation=False)
-	selected_folders_list = list(selected_folders_tuple)
-	# Close the instance of tk.TK() called root
-	root.quit()                                             
-	root.destroy()
-	time.sleep(1)
-	
-	# Create an empty placeholder dictionary to store the case name and directory for all valid selected NCP cases from the selected_folders_list
-	case_directory_dict = {}
-	# Create an empty placeholder list to store lists of subfolder directory names at their respective subfolder level for all valid NCP cases in the selected_folders_list
-	subfolder_level_name_lists = []
-
-	# Loop through each directory in the selected_folders_list and populate the placeholder lists above
-	for directory in selected_folders_list:
-		# In each directory, loop through all subfolders
-		for dirpath, dirnames, filenames in os.walk(directory):
-			# In each bottom-most subfolder, if an instance of ncpcope.csv or ncpconv.csv are found, then that subfolder is considered a valid NCP case
-			if not dirnames and ('ncpcope.csv' in filenames or 'ncpconv.csv' in filenames):
-				# If any instances of .tmp files exist in the valid NCP case folder, then that case is considered to be running and will be ignored
-				if len(list(pathlib.Path(dirpath).glob('*.tmp'))) < 1:
-					# Extract the case name from dirpath
-					case_parent_directory = directory.rsplit('\\', 1)[0]
-					case_name = dirpath.rsplit(case_parent_directory)[-1]
-					# Add a new item to the case_directory_dict with case_name as the key and dirpath as the item directory
-					case_directory_dict[case_name] = dirpath
-					# Extract a list of subfolder names from the case_name
-					case_subfolder_list = case_name.split('\\')
-					case_subfolder_list = [x for x in case_subfolder_list if x != '']
-					# Loop through each subfolder name in the case_subfolder_list
-					for subfolder_level, subfolder_name in enumerate(case_subfolder_list):
-						# If the subfolder_level doesn't have a corresponding subfolder level name list in subfolder_level_name_lists, append an empty list in subfolder_level_name_lists
-						if len(subfolder_level_name_lists) <= subfolder_level:
-							subfolder_level_name_lists.append([])
-						# Append the subfolder_name into the corresponding subfolder level name list in subfolder_level_name_lists
-						subfolder_level_name_lists[subfolder_level].append(subfolder_name)
-
-	# Count the number of subfolder levels in subfolder_level_name_lists
-	subfolder_level_count = len(subfolder_level_name_lists)	
-	# Remove all duplicate names from each subfolder level name list in subfolder_level_name_lists
-	for level in range(subfolder_level_count):
-		subfolder_level_name_lists[level] = sorted(list(set(subfolder_level_name_lists[level])))
-	# Create an empty placeholder list to store lists of tk.StringVar() objects corresponding to the subfolder level names in subfolder_level_name_lists
-	subfolder_level_var_lists = [[] for i in range(subfolder_level_count)]
-	
-	# Check that case_directory_dict contains values before continuing
-	if not case_directory_dict:
-		return None
-	
-	#--------------------------User Select Subfolders-------------------------#
-	# Initialize the tk.TK() interpreter and create the root window
-	root = tk.Tk()
-	root.title('Subfolder Selection')
-	root.attributes('-topmost', True)
-	save_flag = False
-
-	def save_subfolders_button():
-		nonlocal save_flag
-		save_flag = True
-		for subfolder_level, subfolder_var_list in enumerate(subfolder_level_var_lists):
-			# Overwrite each subfolder level name list in subfolder_level_name_lists with only the checked names from subfolder_level_var_lists
-			subfolder_level_name_lists[subfolder_level] = [var.get() for var in subfolder_var_list if var.get()]
-		root.quit()
-		root.destroy()
-	
-	# Add columns to the tkinter window representing each subfolder level in subfolder_level_name_lists
-	for subfolder_level, subfolder_level_list in enumerate(subfolder_level_name_lists):
-		frame = tk.Frame(root, bg='#FFFFFF', highlightbackground='#000000', highlightthickness=1)
-		frame.grid(row=0, column=subfolder_level, padx=5, pady=5, sticky='n')
-		tk.Label(frame, text=f'Subfolder Level {subfolder_level}', bg='#0079C1', fg='white', width=50).pack(expand=True, fill='x', anchor='n')
-		# Populate each column with it's corresponding subfolder level names
-		for subfolder_name in subfolder_level_list:
-			var = tk.StringVar(value=subfolder_name)
-			level = tk.Checkbutton(frame, text=subfolder_name, variable=var, onvalue=subfolder_name, offvalue=None, bg='white')
-			level.select()
-			level.pack(anchor='nw')
-			# Append all subfolder level vars to the corresponding subfolder level list in subfolder_level_var_lists
-			subfolder_level_var_lists[subfolder_level].append(var)
-	
-	# Add a Save button at the bottom of the tkinter window
-	frame_button = tk.Frame(root, bg='#FFFFFF', highlightbackground='#000000', highlightthickness=1)
-	frame_button.grid(row=1, column=0, columnspan=subfolder_level_count, sticky=tk.W+tk.E, padx=5, pady=5)
-	btn = tk.Button(frame_button, text='Save', command=save_subfolders_button, bg='#0079C1', fg='white')
-	btn.pack(fill='x')
-
-	# Remain in this loop until root.quit() is called
-	root.mainloop()
-
-	# Check that the Save button was clicked before continuing
-	if not save_flag:
-		return None
-
-	#--------------------Generate Case Directory Dictionary-------------------#
-	# Create an empty placeholder list to store the case_names to be removed from case_directory_dict
-	cases_to_be_removed = []
-	# Loop through each NCP case in case_directory_dict again
-	for case_name, directory in case_directory_dict.items():
-		# Extract a list of subfolder names from the case_name
-		case_subfolder_list = case_name.split('\\')
-		case_subfolder_list = [x for x in case_subfolder_list if x != '']
-		# Loop through each subfolder name in the case_subfolder_list
-		for subfolder_level, subfolder_name in enumerate(case_subfolder_list):
-			# If a subfolder_name can't be found in it's corresponding subfolder level name list, add the case_name to the cases_to_be_removed list
-			if subfolder_name not in subfolder_level_name_lists[subfolder_level]:
-				cases_to_be_removed.append(case_name)
-				break
-	# Remove cases from case_directory_dict
-	for case_name in cases_to_be_removed:
-		del case_directory_dict[case_name]
+	# Tkinter not working properly when deployed via Streamlit, therefore, automatically select the following cases
+	case_directory_dict = {fr'Case 1\Jan\1941': fr'.NCP Cases\Case 1\Jan\1941',
+						fr'Case 2\Jan\1941': fr'.NCP Cases\Case 2\Jan\1941',
+						fr'Case 3\Jan\1941': fr'.NCP Cases\Case 3\Jan\1941',
+						fr'Case 4\Jan\1941': fr'.NCP Cases\Case 4\Jan\1941',
+						fr'Case 5\Jan\1941': fr'.NCP Cases\Case 5\Jan\1941'}
 	return case_directory_dict
+	
+	# #-----------------------User Select Network Location----------------------#
+	# # List of available network locations
+	# network_list = [fr'C:\Users\Dallas\Documents\Streamlit Project']
+
+	# # Initialize the tk.TK() interpreter and create the root window
+	# root = tk.Tk()
+	# root.title('Network Selection')
+	# root.attributes('-topmost', True)
+
+	# def save_network_location_button():
+	# 	global selected_network
+	# 	selected_network = var.get()
+	# 	root.quit()
+	# 	root.destroy()
+	
+	# # Setup frame and style
+	# frame = tk.Frame(root, bg='#FFFFFF', highlightbackground='#000000', highlightthickness=1)
+	# frame.grid(row=0, column=0, padx=5, pady=5, sticky='n')
+	# tk.Label(frame, text='Network Location', bg='#0079C1', fg='white', width=50).pack(expand=True, fill='x', anchor='n')
+
+	# # Add a list of available network locations for the user to choose from
+	# var = tk.StringVar(root, network_list[0])
+	# for network_location in network_list:
+	# 	tk.Radiobutton(frame, text=network_location, value=network_location, variable=var, bg='white').pack(fill='x', anchor='nw')
+	
+	# # Add a Save button at the bottom of the tkinter window
+	# frame_button = tk.Frame(root, bg='#FFFFFF', highlightbackground='#000000', highlightthickness=1)
+	# frame_button.grid(row=1, column=0, columnspan=1, sticky=tk.W+tk.E, padx=5, pady=5)
+	# btn = tk.Button(frame_button, text='Save', command=save_network_location_button, bg='#0079C1', fg='white')
+	# btn.pack(fill='x')
+
+	# # Remain in this loop until root.quit() is called
+	# root.mainloop()
+
+	# # Check that selected_network contains a value before continuing
+	# if 'selected_network' not in globals():
+	# 	return None
+
+	# #----------------------------User Select Cases----------------------------#
+	# # Initialize the tk.TK() interpreter and create the root window
+	# root = tk.Tk()
+	# root.attributes('-topmost', True)
+	# selected_folders_tuple = tkfilebrowser.askopendirnames(parent=root, title='Select NCP cases to compare', initialdir=selected_network, foldercreation=False)
+	# selected_folders_list = list(selected_folders_tuple)
+	# # Close the instance of tk.TK() called root
+	# root.quit()                                             
+	# root.destroy()
+	# time.sleep(1)
+	
+	# # Create an empty placeholder dictionary to store the case name and directory for all valid selected NCP cases from the selected_folders_list
+	# case_directory_dict = {}
+	# # Create an empty placeholder list to store lists of subfolder directory names at their respective subfolder level for all valid NCP cases in the selected_folders_list
+	# subfolder_level_name_lists = []
+
+	# # Loop through each directory in the selected_folders_list and populate the placeholder lists above
+	# for directory in selected_folders_list:
+	# 	# In each directory, loop through all subfolders
+	# 	for dirpath, dirnames, filenames in os.walk(directory):
+	# 		# In each bottom-most subfolder, if an instance of ncpcope.csv or ncpconv.csv are found, then that subfolder is considered a valid NCP case
+	# 		if not dirnames and ('ncpcope.csv' in filenames or 'ncpconv.csv' in filenames):
+	# 			# If any instances of .tmp files exist in the valid NCP case folder, then that case is considered to be running and will be ignored
+	# 			if len(list(pathlib.Path(dirpath).glob('*.tmp'))) < 1:
+	# 				# Extract the case name from dirpath
+	# 				case_parent_directory = directory.rsplit('\\', 1)[0]
+	# 				case_name = dirpath.rsplit(case_parent_directory)[-1]
+	# 				# Add a new item to the case_directory_dict with case_name as the key and dirpath as the item directory
+	# 				case_directory_dict[case_name] = dirpath
+	# 				# Extract a list of subfolder names from the case_name
+	# 				case_subfolder_list = case_name.split('\\')
+	# 				case_subfolder_list = [x for x in case_subfolder_list if x != '']
+	# 				# Loop through each subfolder name in the case_subfolder_list
+	# 				for subfolder_level, subfolder_name in enumerate(case_subfolder_list):
+	# 					# If the subfolder_level doesn't have a corresponding subfolder level name list in subfolder_level_name_lists, append an empty list in subfolder_level_name_lists
+	# 					if len(subfolder_level_name_lists) <= subfolder_level:
+	# 						subfolder_level_name_lists.append([])
+	# 					# Append the subfolder_name into the corresponding subfolder level name list in subfolder_level_name_lists
+	# 					subfolder_level_name_lists[subfolder_level].append(subfolder_name)
+
+	# # Count the number of subfolder levels in subfolder_level_name_lists
+	# subfolder_level_count = len(subfolder_level_name_lists)	
+	# # Remove all duplicate names from each subfolder level name list in subfolder_level_name_lists
+	# for level in range(subfolder_level_count):
+	# 	subfolder_level_name_lists[level] = sorted(list(set(subfolder_level_name_lists[level])))
+	# # Create an empty placeholder list to store lists of tk.StringVar() objects corresponding to the subfolder level names in subfolder_level_name_lists
+	# subfolder_level_var_lists = [[] for i in range(subfolder_level_count)]
+	
+	# # Check that case_directory_dict contains values before continuing
+	# if not case_directory_dict:
+	# 	return None
+	
+	# #--------------------------User Select Subfolders-------------------------#
+	# # Initialize the tk.TK() interpreter and create the root window
+	# root = tk.Tk()
+	# root.title('Subfolder Selection')
+	# root.attributes('-topmost', True)
+	# save_flag = False
+
+	# def save_subfolders_button():
+	# 	nonlocal save_flag
+	# 	save_flag = True
+	# 	for subfolder_level, subfolder_var_list in enumerate(subfolder_level_var_lists):
+	# 		# Overwrite each subfolder level name list in subfolder_level_name_lists with only the checked names from subfolder_level_var_lists
+	# 		subfolder_level_name_lists[subfolder_level] = [var.get() for var in subfolder_var_list if var.get()]
+	# 	root.quit()
+	# 	root.destroy()
+	
+	# # Add columns to the tkinter window representing each subfolder level in subfolder_level_name_lists
+	# for subfolder_level, subfolder_level_list in enumerate(subfolder_level_name_lists):
+	# 	frame = tk.Frame(root, bg='#FFFFFF', highlightbackground='#000000', highlightthickness=1)
+	# 	frame.grid(row=0, column=subfolder_level, padx=5, pady=5, sticky='n')
+	# 	tk.Label(frame, text=f'Subfolder Level {subfolder_level}', bg='#0079C1', fg='white', width=50).pack(expand=True, fill='x', anchor='n')
+	# 	# Populate each column with it's corresponding subfolder level names
+	# 	for subfolder_name in subfolder_level_list:
+	# 		var = tk.StringVar(value=subfolder_name)
+	# 		level = tk.Checkbutton(frame, text=subfolder_name, variable=var, onvalue=subfolder_name, offvalue=None, bg='white')
+	# 		level.select()
+	# 		level.pack(anchor='nw')
+	# 		# Append all subfolder level vars to the corresponding subfolder level list in subfolder_level_var_lists
+	# 		subfolder_level_var_lists[subfolder_level].append(var)
+	
+	# # Add a Save button at the bottom of the tkinter window
+	# frame_button = tk.Frame(root, bg='#FFFFFF', highlightbackground='#000000', highlightthickness=1)
+	# frame_button.grid(row=1, column=0, columnspan=subfolder_level_count, sticky=tk.W+tk.E, padx=5, pady=5)
+	# btn = tk.Button(frame_button, text='Save', command=save_subfolders_button, bg='#0079C1', fg='white')
+	# btn.pack(fill='x')
+
+	# # Remain in this loop until root.quit() is called
+	# root.mainloop()
+
+	# # Check that the Save button was clicked before continuing
+	# if not save_flag:
+	# 	return None
+
+	# #--------------------Generate Case Directory Dictionary-------------------#
+	# # Create an empty placeholder list to store the case_names to be removed from case_directory_dict
+	# cases_to_be_removed = []
+	# # Loop through each NCP case in case_directory_dict again
+	# for case_name, directory in case_directory_dict.items():
+	# 	# Extract a list of subfolder names from the case_name
+	# 	case_subfolder_list = case_name.split('\\')
+	# 	case_subfolder_list = [x for x in case_subfolder_list if x != '']
+	# 	# Loop through each subfolder name in the case_subfolder_list
+	# 	for subfolder_level, subfolder_name in enumerate(case_subfolder_list):
+	# 		# If a subfolder_name can't be found in it's corresponding subfolder level name list, add the case_name to the cases_to_be_removed list
+	# 		if subfolder_name not in subfolder_level_name_lists[subfolder_level]:
+	# 			cases_to_be_removed.append(case_name)
+	# 			break
+	# # Remove cases from case_directory_dict
+	# for case_name in cases_to_be_removed:
+	# 	del case_directory_dict[case_name]
+	# return case_directory_dict
 
 def develop_case_metrics(directory: str, case_name: str, csv_metrics_dict: dict, dat_metrics_dict: dict, master_metrics_df: pd.DataFrame, master_summary_df: pd.DataFrame):
 	'''From the single NCP case provided, generate metrics_df and summary_df DataFrames from the 2 provided metric lists and append these DataFrames to the master_metrics_df and master_summary_df DataFrames
