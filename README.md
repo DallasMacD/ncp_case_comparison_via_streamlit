@@ -6,7 +6,8 @@ The NCP Case Comparison Tool is designed to improve the review and analysis proc
 
 1. Install the latest version of [Python](https://www.python.org/downloads/)
 2. Open a terminal and run:
-    ```pip install streamlit==1.29.0
+    ```
+    pip install streamlit==1.29.0
     pip install pandas
     pip install numpy
     pip install plotly
