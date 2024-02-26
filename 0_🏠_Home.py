@@ -52,6 +52,15 @@ if __name__ == '__main__':
 				st.session_state.case_list = list()
 				st.session_state.metric_list = list()
 				st.session_state.metric_agent_df = pd.DataFrame()
+				# Clear page specific Case Selection Session State variables
+				if 'line_chart_case_selection' in st.session_state:
+					st.session_state.line_chart_case_selection = None
+				if 'multi_line_chart_case_selection' in st.session_state:
+					st.session_state.multi_line_chart_case_selection = None
+				if 'bar_chart_case_selection' in st.session_state:
+					st.session_state.bar_chart_case_selection = None
+				if 'duration_curve_case_selection' in st.session_state:
+					st.session_state.duration_curve_case_selection = None
 				# Count number of cases in case_directory_dict to use when updating the data_progress_bar
 				case_count = len(case_directory_dict)
 				progress_interval = 0
@@ -87,7 +96,7 @@ if __name__ == '__main__':
 			  		</br>
 					To get started, first open the navigation menu on the left and press the <b>Fetch Case Data</b> button. Follow the instructions provided and select the NCP cases you wish to review and analyze:<br>
 					<ol>
-			  			<li>Select one of the 4 available network drive locations to retrieve NCP model results from (only 1 available in this demo)</li>
+			  			<li>Select one of the 4 available network drive locations to retrieve NCP model results from</li>
 			  			<li>Select the folder containing the NCP model results you would like to review and analyze</li>
 			  			<li>Filter out any NCP model result folders that are not required save</li>
 			  		</ol>
