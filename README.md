@@ -17,7 +17,6 @@ The NCP Case Comparison Tool is designed to improve the review and analysis proc
 
 ## Getting Started
 
-Follow the link below:
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ncpcasecomparisonviaapp-rtex4ybkfbtnxnwqwfxr4q.streamlit.app)
 
 If you've downloaded the files to your computer, run the **Start_Streamlit.py** python script. This will automatically open your default web browser to the NCP Case Comparison Tool Streamlit application.
