@@ -121,8 +121,7 @@ if __name__ == '__main__':
 		stylized_summary.format({('Convergence (%)', 'Average'): 			'{:.2f}', 
 								('Convergence (%)', 'Worst'): 				'{:.2f}', 
 								('Sum of Generation (MW)', 'Provincial'): 	'{:,.0f}', 
-								('Sum of Generation (MW)', 'Hydro'): 		'{:,.0f}', 
-								('Sum of Generation (MW)', 'LNR'): 			'{:,.0f}', 
+								('Sum of Generation (MW)', 'Hydro'): 		'{:,.0f}',
 								('Sum of Generation (MW)', 'Thermal'): 		'{:,.0f}', 
 								('Sum of Generation (MW)', 'Renewables'): 	'{:,.0f}', 
 								('Sum of Load (MW)', 'Demand'): 			'{:,.0f}', 
@@ -137,7 +136,7 @@ if __name__ == '__main__':
 		positive_bar_color = '#ABD331'
 		negative_bar_color = '#F59421'
 		# Format specific columns to include bar charts
-		for column in [('Sum of Generation (MW)', 'Provincial'), ('Sum of Generation (MW)', 'Hydro'), ('Sum of Generation (MW)', 'LNR'), ('Sum of Generation (MW)', 'Thermal'), ('Sum of Exchange (MW)', 'Imports'), ('Sum of Exchange (MW)', 'Opp. Exports'), ('Financials (USD k$)', 'Revenues')]:
+		for column in [('Sum of Generation (MW)', 'Provincial'), ('Sum of Generation (MW)', 'Hydro'), ('Sum of Generation (MW)', 'Thermal'), ('Sum of Exchange (MW)', 'Imports'), ('Sum of Exchange (MW)', 'Opp. Exports'), ('Financials (USD k$)', 'Revenues')]:
 			bar_min = summary_df[column].min()
 			bar_max = summary_df[column].max() if summary_df[column].max() != summary_df[column].min() else summary_df[column].max() + 1
 			stylized_summary.bar(subset=pd.IndexSlice[:, pd.IndexSlice[:, column[1]]], axis=0, vmin=bar_min, vmax=bar_max, color=positive_bar_color)
