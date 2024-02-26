@@ -56,6 +56,15 @@ if __name__ == '__main__':
 				st.session_state.case_list = list()
 				st.session_state.metric_list = list()
 				st.session_state.metric_agent_df = pd.DataFrame()
+				# Clear page specific Case Selection Session State variables
+				if 'line_chart_case_selection' in st.session_state:
+					st.session_state.line_chart_case_selection = None
+				if 'multi_line_chart_case_selection' in st.session_state:
+					st.session_state.multi_line_chart_case_selection = None
+				if 'bar_chart_case_selection' in st.session_state:
+					st.session_state.bar_chart_case_selection = None
+				if 'duration_curve_case_selection' in st.session_state:
+					st.session_state.duration_curve_case_selection = None
 				# Count number of cases in case_directory_dict to use when updating the data_progress_bar
 				case_count = len(case_directory_dict)
 				progress_interval = 0
@@ -109,6 +118,7 @@ if __name__ == '__main__':
 		st.session_state[agent_multiselect_key] = selected_agents_list
 		st.session_state[agent_session_state_key] = selected_agents_list
 	
+
 	def filter_metrics_df(case_multiselect_key: str, case_session_state_key: str, 
 					   	  bar_metric_multiselect_key: str, bar_metric_session_state_key: str, 
 						  bar_agent_multiselect_key: str, bar_agent_session_state_key: str, 
@@ -145,9 +155,14 @@ if __name__ == '__main__':
 		# NOTE: st.session_state.metrics_df is a DataFrame containing the metrics from all selected NCP cases with Hour as the index and Case -> Metric Name -> Agent as the multiindex column levels
 		st.session_state[bar_filtered_metrics_df_session_state_key] = st.session_state.metrics_df.loc[:, (st.session_state.metrics_df.columns.get_level_values(0).isin(st.session_state[case_multiselect_key])) & (st.session_state.metrics_df.columns.get_level_values(1).isin(st.session_state[bar_metric_multiselect_key])) & (st.session_state.metrics_df.columns.get_level_values(2).isin(st.session_state[bar_agent_multiselect_key] + ['']))]
 		st.session_state[line_filtered_metrics_df_session_state_key] = st.session_state.metrics_df.loc[:, (st.session_state.metrics_df.columns.get_level_values(0).isin(st.session_state[case_multiselect_key])) & (st.session_state.metrics_df.columns.get_level_values(1).isin(st.session_state[line_metric_multiselect_key])) & (st.session_state.metrics_df.columns.get_level_values(2).isin(st.session_state[line_agent_multiselect_key] + ['']))]
-		# Sort column order in the order of Metric Names selected
+		# Sort column order in the order of Case Alias - Metric Names - Agent Names selected
+		st.session_state[bar_filtered_metrics_df_session_state_key] = st.session_state[bar_filtered_metrics_df_session_state_key].reindex(level=2, columns=st.session_state[bar_agent_multiselect_key] + [''])
 		st.session_state[bar_filtered_metrics_df_session_state_key] = st.session_state[bar_filtered_metrics_df_session_state_key].reindex(level=1, columns=st.session_state[bar_metric_multiselect_key])
+		st.session_state[bar_filtered_metrics_df_session_state_key] = st.session_state[bar_filtered_metrics_df_session_state_key].reindex(level=0, columns=st.session_state[case_multiselect_key])
+		st.session_state[line_filtered_metrics_df_session_state_key] = st.session_state[line_filtered_metrics_df_session_state_key].reindex(level=2, columns=st.session_state[line_agent_multiselect_key] + [''])
 		st.session_state[line_filtered_metrics_df_session_state_key] = st.session_state[line_filtered_metrics_df_session_state_key].reindex(level=1, columns=st.session_state[line_metric_multiselect_key])
+		st.session_state[line_filtered_metrics_df_session_state_key] = st.session_state[line_filtered_metrics_df_session_state_key].reindex(level=0, columns=st.session_state[case_multiselect_key])
+
 
 	def define_initial_y_axis_bounds(min_value: float, max_value: float):
 		'''Create an initial set of Y-Axis bounds based on the minimum and maximum values to be plotted
@@ -183,6 +198,7 @@ if __name__ == '__main__':
 			upper_bound = math.ceil(max_value / difference_b10) * difference_b10
 		return lower_bound, upper_bound
 
+
 	def create_single_case_bar_chart(bars_df: pd.DataFrame, lines_df: pd.DataFrame):
 		'''Create a plotly line chart containing all NCP cases from the data supplied in the primary and secondary axis DataFrames
 		
@@ -197,30 +213,29 @@ if __name__ == '__main__':
 		# Create boolean variables to indicate the empty status of each DataFrame
 		bars_empty   = False
 		lines_empty = False
-		# Create an empty list to store selected Case Names in each axis DataFrame
-		case_list = []
 		# If bars_df or lines_df are empty, set their respective empty flag to True
 		# Else, return a copy of each respective DataFrame with the Case multiindex column level converted into a separate column called "Case Name"
 		# 		and the Metric Name and Agent multiindex column levels flattened with the format "Metric Name [Agent]" (or only "Metric Name" for columns with no Agent)
 		if bars_df.empty:
 			bars_empty = True
 		else:
+			bars_case_name_index = bars_df.columns.get_level_values(0).unique()
 			bars_df = bars_df.stack(level=0) # Move the Case (0) multiindex column level into the index (shifting Metric Name and Agent multiindex column levels from 1 -> 0 and 2 -> 1 respectivley)
+			bars_df = bars_df.reindex(level=1, index=bars_case_name_index) # Reindex the Case Name index (level 1) to match the order before performing stack()
 			bars_df.index.names = ['Hour', 'Case Name']
 			bars_df = bars_df.reset_index(level='Case Name')
 			bars_df.columns = bars_df.columns.map(lambda x: (f'{x[0]} [{x[1]}]') if x[1] != '' else (x[0])) # Metric Name (1), Agent (0)
-			case_list += list(bars_df['Case Name'].unique())
+			case_list = list(bars_df['Case Name'].unique())
 		if lines_df.empty:
 			lines_empty = True
 		else:
+			lines_case_name_index = lines_df.columns.get_level_values(0).unique()
 			lines_df = lines_df.stack(level=0) # Move the Case (0) multiindex column level into the index (shifting Metric Name and Agent multiindex column levels from 1 -> 0 and 2 -> 1 respectivley)
+			lines_df = lines_df.reindex(level=1, index=lines_case_name_index) # Reindex the Case Name index (level 1) to match the order before performing stack()
 			lines_df.index.names = ['Hour', 'Case Name']
 			lines_df = lines_df.reset_index(level='Case Name')
 			lines_df.columns = lines_df.columns.map(lambda x: (f'{x[0]} [{x[1]}]') if x[1] != '' else (x[0])) # Metric Name (1), Agent (0)
-			case_list += list(lines_df['Case Name'].unique())
-
-		# Remove duplicate cases in case_list
-		case_list = list(set(case_list))
+			case_list = list(lines_df['Case Name'].unique())
 
 		# For each Case Name provided in bars_df and lines_df, create a new subplot with Case Name as the title
 		for case_name in case_list:
@@ -252,20 +267,23 @@ if __name__ == '__main__':
 			master_fig.update_layout(margin={'l':20, 'r':20, 't':20, 'b':0})
 			# Create an st.empty() placeholder object to display our line chart (Redraw the chart in place anytime the X or Y-Axis bounds are updated)
 			redraw_chart = st.empty()
-			redraw_chart.write(master_fig)
 
 			# Combine the primary and secondary axis dataframes and remove any duplicate columns ('Hour' and 'Case Name')
 			# combined_case_chart_df used to calculate the x-axis upper and lower bounds and download chart data
 			if bars_empty and not lines_empty:
 				combined_case_chart_df = lines_case_df.copy()
+				y_max = lines_case_df.loc[:, lines_case_df.columns != 'Case Name'].max().max()
+				y_min = min(lines_case_df.loc[:, lines_case_df.columns != 'Case Name'].min().min(), 0)
 			if not bars_empty and lines_empty:
 				combined_case_chart_df = bars_case_df.copy()
+				y_max = bars_case_df.loc[:, bars_case_df.columns != 'Case Name'].sum(axis=1).max()
+				y_min = min(bars_case_df.loc[:, bars_case_df.columns != 'Case Name'].min().min(), 0)
 			if not bars_empty and not lines_empty:
 				combined_case_chart_df = bars_case_df.merge(right=lines_case_df, on=['Hour', 'Case Name'], how='outer')
+				y_max = max(bars_case_df.loc[:, bars_case_df.columns != 'Case Name'].sum(axis=1).max(), lines_case_df.loc[:, lines_case_df.columns != 'Case Name'].max().max())
+				y_min = min(lines_case_df.loc[:, lines_case_df.columns != 'Case Name'].min().min(), bars_case_df.loc[:, bars_case_df.columns != 'Case Name'].min().min(), 0)
 
 			# Calculate the Y-Axis upper and lower bounds
-			y_max = combined_case_chart_df.loc[:, combined_case_chart_df.columns != 'Case Name'].max().max()
-			y_min = combined_case_chart_df.loc[:, combined_case_chart_df.columns != 'Case Name'].min().min()
 			y_lower_bound, y_upper_bound = define_initial_y_axis_bounds(min_value=y_min, max_value=y_max)
 			y_tick_size = (y_upper_bound - y_lower_bound) / 10
 			# Calculate the X-Axis upper and lower bounds
@@ -296,7 +314,7 @@ if __name__ == '__main__':
 			
 			with download_chart_data_column:
 				chart_output_df = combined_case_chart_df.copy()
-				chart_output_df = chart_output_df.set_index('Case Name', append=True).unstack().swaplevel(0, 1, axis=1).sort_index(axis=1)
+				chart_output_df = chart_output_df.set_index('Case Name', append=True).unstack().swaplevel(0, 1, axis=1)
 				chart_output = chart_output_df.to_csv()
 				st.download_button(label='Download Chart Data', data=chart_output, use_container_width=True, file_name=f'{case_name}_bar_chart_data.csv', key=f'bar_chart_download_button_{case_name}')
 
@@ -399,7 +417,7 @@ if __name__ == '__main__':
 			  			</br>
 						To get NCP case data, first open the navigation menu on the left and press the <b>Fetch Case Data</b> button. Follow the instructions provided and select the NCP cases you wish to review and analyze:<br>
 						<ol>
-			  				<li>Select one of the 4 available network drive locations to retrieve NCP model results from (only 1 available in this demo)</li>
+			  				<li>Select one of the 4 available network drive locations to retrieve NCP model results from</li>
 			  				<li>Select the folder containing the NCP model results you would like to review and analyze</li>
 			  				<li>Filter out any NCP model result folders that are not required save</li>
 			  			</ol>
