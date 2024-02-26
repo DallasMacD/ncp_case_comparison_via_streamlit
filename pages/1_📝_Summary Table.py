@@ -52,6 +52,15 @@ if __name__ == '__main__':
 				st.session_state.case_list = list()
 				st.session_state.metric_list = list()
 				st.session_state.metric_agent_df = pd.DataFrame()
+				# Clear page specific Case Selection Session State variables
+				if 'line_chart_case_selection' in st.session_state:
+					st.session_state.line_chart_case_selection = None
+				if 'multi_line_chart_case_selection' in st.session_state:
+					st.session_state.multi_line_chart_case_selection = None
+				if 'bar_chart_case_selection' in st.session_state:
+					st.session_state.bar_chart_case_selection = None
+				if 'duration_curve_case_selection' in st.session_state:
+					st.session_state.duration_curve_case_selection = None
 				# Count number of cases in case_directory_dict to use when updating the data_progress_bar
 				case_count = len(case_directory_dict)
 				progress_interval = 0
@@ -113,6 +122,7 @@ if __name__ == '__main__':
 								('Convergence (%)', 'Worst'): 				'{:.2f}', 
 								('Sum of Generation (MW)', 'Provincial'): 	'{:,.0f}', 
 								('Sum of Generation (MW)', 'Hydro'): 		'{:,.0f}', 
+								('Sum of Generation (MW)', 'LNR'): 			'{:,.0f}', 
 								('Sum of Generation (MW)', 'Thermal'): 		'{:,.0f}', 
 								('Sum of Generation (MW)', 'Renewables'): 	'{:,.0f}', 
 								('Sum of Load (MW)', 'Demand'): 			'{:,.0f}', 
@@ -127,7 +137,7 @@ if __name__ == '__main__':
 		positive_bar_color = '#ABD331'
 		negative_bar_color = '#F59421'
 		# Format specific columns to include bar charts
-		for column in [('Sum of Generation (MW)', 'Provincial'), ('Sum of Generation (MW)', 'Hydro'), ('Sum of Generation (MW)', 'Thermal'), ('Sum of Exchange (MW)', 'Imports'), ('Sum of Exchange (MW)', 'Opp. Exports'), ('Financials (USD k$)', 'Revenues')]:
+		for column in [('Sum of Generation (MW)', 'Provincial'), ('Sum of Generation (MW)', 'Hydro'), ('Sum of Generation (MW)', 'LNR'), ('Sum of Generation (MW)', 'Thermal'), ('Sum of Exchange (MW)', 'Imports'), ('Sum of Exchange (MW)', 'Opp. Exports'), ('Financials (USD k$)', 'Revenues')]:
 			bar_min = summary_df[column].min()
 			bar_max = summary_df[column].max() if summary_df[column].max() != summary_df[column].min() else summary_df[column].max() + 1
 			stylized_summary.bar(subset=pd.IndexSlice[:, pd.IndexSlice[:, column[1]]], axis=0, vmin=bar_min, vmax=bar_max, color=positive_bar_color)
@@ -174,7 +184,7 @@ if __name__ == '__main__':
 			  			</br>
 						To get NCP case data, first open the navigation menu on the left and press the <b>Fetch Case Data</b> button. Follow the instructions provided and select the NCP cases you wish to review and analyze:<br>
 						<ol>
-			  				<li>Select one of the 4 available network drive locations to retrieve NCP model results from (only 1 available in this demo)</li>
+			  				<li>Select one of the 4 available network drive locations to retrieve NCP model results from</li>
 			  				<li>Select the folder containing the NCP model results you would like to review and analyze</li>
 			  				<li>Filter out any NCP model result folders that are not required save</li>
 			  			</ol>
