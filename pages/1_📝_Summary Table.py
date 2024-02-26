@@ -86,10 +86,25 @@ if __name__ == '__main__':
 # 2. Define Functions - Page Specific
 #--------------------------------------------------------------------------------------------------#
 
+	def update_table_filter_session_state(self_text_input_key: str):
+		'''A function to be called whenever the Summary Table Text Input Filter is modified that will update the Summary Table Filter session state variable
+
+		Args:
+			self_text_input_key: The key of the Text Input widget calling this function as a string
+
+		Returns:
+			None
+
+		'''
+		# Assign the selections in the self_text_input_key to summary_table_filter unless itself is None, in which case assign a blank string
+		st.session_state.summary_table_filter = st.session_state[self_text_input_key] if st.session_state[self_text_input_key] else ''
+
+
 	def filter_summary_df(case_filter_text: str, summary_df: pd.DataFrame) -> pd.DataFrame:
 		'''A function that filters summary_df based on the case_filter_text
 
 		Args:
+			case_filter_text: Text used to filter summary_df Case Names by as a string
 			summary_df: A DataFrame containing summary metrics from the NCP case provided, with Case Name as the index and Summary Group -> Metric Names as the multiindex column levels
 
 		Returns:
@@ -105,6 +120,7 @@ if __name__ == '__main__':
 				filtered_summary_df = filtered_summary_df[filtered_summary_df.index.str.contains(text, case=False, regex=True)]
 		return filtered_summary_df
 	
+
 	def stylize_summary_df(summary_df: pd.DataFrame):
 		'''A function that stylizes the summary dataframe provided
 
@@ -121,7 +137,8 @@ if __name__ == '__main__':
 		stylized_summary.format({('Convergence (%)', 'Average'): 			'{:.2f}', 
 								('Convergence (%)', 'Worst'): 				'{:.2f}', 
 								('Sum of Generation (MW)', 'Provincial'): 	'{:,.0f}', 
-								('Sum of Generation (MW)', 'Hydro'): 		'{:,.0f}',
+								('Sum of Generation (MW)', 'Hydro'): 		'{:,.0f}', 
+								('Sum of Generation (MW)', 'LNR'): 			'{:,.0f}', 
 								('Sum of Generation (MW)', 'Thermal'): 		'{:,.0f}', 
 								('Sum of Generation (MW)', 'Renewables'): 	'{:,.0f}', 
 								('Sum of Load (MW)', 'Demand'): 			'{:,.0f}', 
@@ -136,7 +153,7 @@ if __name__ == '__main__':
 		positive_bar_color = '#ABD331'
 		negative_bar_color = '#F59421'
 		# Format specific columns to include bar charts
-		for column in [('Sum of Generation (MW)', 'Provincial'), ('Sum of Generation (MW)', 'Hydro'), ('Sum of Generation (MW)', 'Thermal'), ('Sum of Exchange (MW)', 'Imports'), ('Sum of Exchange (MW)', 'Opp. Exports'), ('Financials (USD k$)', 'Revenues')]:
+		for column in [('Sum of Generation (MW)', 'Provincial'), ('Sum of Generation (MW)', 'Hydro'), ('Sum of Generation (MW)', 'LNR'), ('Sum of Generation (MW)', 'Thermal'), ('Sum of Exchange (MW)', 'Imports'), ('Sum of Exchange (MW)', 'Opp. Exports'), ('Financials (USD k$)', 'Revenues')]:
 			bar_min = summary_df[column].min()
 			bar_max = summary_df[column].max() if summary_df[column].max() != summary_df[column].min() else summary_df[column].max() + 1
 			stylized_summary.bar(subset=pd.IndexSlice[:, pd.IndexSlice[:, column[1]]], axis=0, vmin=bar_min, vmax=bar_max, color=positive_bar_color)
@@ -165,13 +182,21 @@ if __name__ == '__main__':
 			case_filter_column, _, export_summary_column = st.columns((2.5, 5, 2.5))
 			# Create text input to filter summary_df
 			with case_filter_column:
-				case_filter_text = st.text_input('Case Filter', value=st.session_state.summary_table_filter, key='summary_table_filter_text_input', placeholder='Filter by Case Name ("&" and "|")', label_visibility='collapsed')
+				case_filter_text = st.text_input('Case Filter', 
+									 			value=st.session_state.summary_table_filter, 
+												key='summary_table_filter_text_input', 
+												placeholder='Filter by Case Name ("&" and "|")', 
+												label_visibility='collapsed',
+												on_change=update_table_filter_session_state,
+												kwargs=dict(self_text_input_key='summary_table_filter_text_input'))
 				filtered_summary_df = filter_summary_df(case_filter_text, st.session_state.summary_df)
-				st.session_state.summary_table_filter = case_filter_text
 			# Create a download button to download filtered_summary_df
 			with export_summary_column:
 				filtered_summary_output = filtered_summary_df.to_csv()
-				export_summary_button = st.download_button('Export Summary Table', data=filtered_summary_output, file_name='Summary Table.csv', key='summary_table_export_button')
+				export_summary_button = st.download_button('Export Summary Table', 
+											   				data=filtered_summary_output, 
+															file_name='Summary Table.csv', 
+															key='summary_table_export_button')
 			# Create a table by converting filtered_summary_df into a pandas Styler object then converting it into an HTML object
 			stylized_summary_df = stylize_summary_df(filtered_summary_df)
 			summary_html = stylized_summary_df.to_html()
