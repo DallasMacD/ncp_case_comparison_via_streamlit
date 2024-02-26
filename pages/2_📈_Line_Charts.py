@@ -56,6 +56,15 @@ if __name__ == '__main__':
 				st.session_state.case_list = list()
 				st.session_state.metric_list = list()
 				st.session_state.metric_agent_df = pd.DataFrame()
+				# Clear page specific Case Selection Session State variables
+				if 'line_chart_case_selection' in st.session_state:
+					st.session_state.line_chart_case_selection = None
+				if 'multi_line_chart_case_selection' in st.session_state:
+					st.session_state.multi_line_chart_case_selection = None
+				if 'bar_chart_case_selection' in st.session_state:
+					st.session_state.bar_chart_case_selection = None
+				if 'duration_curve_case_selection' in st.session_state:
+					st.session_state.duration_curve_case_selection = None
 				# Count number of cases in case_directory_dict to use when updating the data_progress_bar
 				case_count = len(case_directory_dict)
 				progress_interval = 0
@@ -109,6 +118,7 @@ if __name__ == '__main__':
 		st.session_state[agent_multiselect_key] = selected_agents_list
 		st.session_state[agent_session_state_key] = selected_agents_list
 	
+
 	def filter_metrics_df(case_multiselect_key: str, case_session_state_key: str, 
 					   	  primary_metric_multiselect_key: str, primary_metric_session_state_key: str, 
 						  primary_agent_multiselect_key: str, primary_agent_session_state_key: str, 
@@ -145,9 +155,14 @@ if __name__ == '__main__':
 		# NOTE: st.session_state.metrics_df is a DataFrame containing the metrics from all selected NCP cases with Hour as the index and Case -> Metric Name -> Agent as the multiindex column levels
 		st.session_state[primary_filtered_metrics_df_session_state_key] = st.session_state.metrics_df.loc[:, (st.session_state.metrics_df.columns.get_level_values(0).isin(st.session_state[case_multiselect_key])) & (st.session_state.metrics_df.columns.get_level_values(1).isin(st.session_state[primary_metric_multiselect_key])) & (st.session_state.metrics_df.columns.get_level_values(2).isin(st.session_state[primary_agent_multiselect_key] + ['']))]
 		st.session_state[secondary_filtered_metrics_df_session_state_key] = st.session_state.metrics_df.loc[:, (st.session_state.metrics_df.columns.get_level_values(0).isin(st.session_state[case_multiselect_key])) & (st.session_state.metrics_df.columns.get_level_values(1).isin(st.session_state[secondary_metric_multiselect_key])) & (st.session_state.metrics_df.columns.get_level_values(2).isin(st.session_state[secondary_agent_multiselect_key] + ['']))]
-		# Sort column order in the order of Metric Names selected
+		# Sort column order in the order of Case Alias - Metric Names - Agent Names selected
+		st.session_state[primary_filtered_metrics_df_session_state_key] = st.session_state[primary_filtered_metrics_df_session_state_key].reindex(level=2, columns=st.session_state[primary_agent_multiselect_key] + [''])
 		st.session_state[primary_filtered_metrics_df_session_state_key] = st.session_state[primary_filtered_metrics_df_session_state_key].reindex(level=1, columns=st.session_state[primary_metric_multiselect_key])
+		st.session_state[primary_filtered_metrics_df_session_state_key] = st.session_state[primary_filtered_metrics_df_session_state_key].reindex(level=0, columns=st.session_state[case_multiselect_key])
+		st.session_state[secondary_filtered_metrics_df_session_state_key] = st.session_state[secondary_filtered_metrics_df_session_state_key].reindex(level=2, columns=st.session_state[secondary_agent_multiselect_key] + [''])
 		st.session_state[secondary_filtered_metrics_df_session_state_key] = st.session_state[secondary_filtered_metrics_df_session_state_key].reindex(level=1, columns=st.session_state[secondary_metric_multiselect_key])
+		st.session_state[secondary_filtered_metrics_df_session_state_key] = st.session_state[secondary_filtered_metrics_df_session_state_key].reindex(level=0, columns=st.session_state[case_multiselect_key])
+
 
 	def define_initial_y_axis_bounds(min_value: float, max_value: float):
 		'''Create an initial set of Y-Axis bounds based on the minimum and maximum values to be plotted
@@ -183,6 +198,7 @@ if __name__ == '__main__':
 			upper_bound = math.ceil(max_value / difference_b10) * difference_b10
 		return lower_bound, upper_bound
 
+
 	def create_single_case_line_chart(primary_axis_df: pd.DataFrame, secondary_axis_df: pd.DataFrame):
 		'''Create a plotly line chart containing all NCP cases from the data supplied in the primary and secondary axis DataFrames
 		
@@ -197,30 +213,29 @@ if __name__ == '__main__':
 		# Create boolean variables to indicate the empty status of each axis DataFrame
 		primary_axis_empty   = False
 		secondary_axis_empty = False
-		# Create an empty list to store selected Case Names in each axis DataFrame
-		case_list = []
 		# If primary_axis_df or secondary_axis_df are empty, set their respective empty flag to True
 		# Else, return a copy of each respective DataFrame with the Case multiindex column level converted into a separate column called "Case Name"
 		# 		and the Metric Name and Agent multiindex column levels flattened with the format "Metric Name [Agent]" (or only "Metric Name" for columns with no Agent)
 		if primary_axis_df.empty:
 			primary_axis_empty = True
 		else:
+			primary_axis_case_name_index = primary_axis_df.columns.get_level_values(0).unique()
 			primary_axis_df = primary_axis_df.stack(level=0) # Move the Case (0) multiindex column level into the index (shifting Metric Name and Agent multiindex column levels from 1 -> 0 and 2 -> 1 respectivley)
+			primary_axis_df = primary_axis_df.reindex(level=1, index=primary_axis_case_name_index) # Reindex the Case Name index (level 1) to match the order before performing stack()
 			primary_axis_df.index.names = ['Hour', 'Case Name']
 			primary_axis_df = primary_axis_df.reset_index(level='Case Name')
 			primary_axis_df.columns = primary_axis_df.columns.map(lambda x: (f'{x[0]} [{x[1]}]') if x[1] != '' else (x[0])) # Metric Name (1), Agent (0)
-			case_list += list(primary_axis_df['Case Name'].unique())
+			case_list = list(primary_axis_df['Case Name'].unique())
 		if secondary_axis_df.empty:
 			secondary_axis_empty = True
 		else:
+			secondary_axis_case_name_index = secondary_axis_df.columns.get_level_values(0).unique()
 			secondary_axis_df = secondary_axis_df.stack(level=0) # Move the Case (0) multiindex column level into the index (shifting Metric Name and Agent multiindex column levels from 1 -> 0 and 2 -> 1 respectivley)
+			secondary_axis_df = secondary_axis_df.reindex(level=1, index=secondary_axis_case_name_index) # Reindex the Case Name index (level 1) to match the order before performing stack()
 			secondary_axis_df.index.names = ['Hour', 'Case Name']
 			secondary_axis_df = secondary_axis_df.reset_index(level='Case Name')
 			secondary_axis_df.columns = secondary_axis_df.columns.map(lambda x: (f'{x[0]} [{x[1]}]') if x[1] != '' else (x[0])) # Metric Name (1), Agent (0)
-			case_list += list(secondary_axis_df['Case Name'].unique())
-
-		# Remove duplicate cases in case_list
-		case_list = list(set(case_list))
+			case_list = list(secondary_axis_df['Case Name'].unique())
 
 		# For each Case Name provided in primary_axis_df and secondary_axis_df, create a new subplot with Case Name as the title
 		for case_name in case_list:
@@ -256,7 +271,6 @@ if __name__ == '__main__':
 			master_fig.update_layout(margin={'l':20, 'r':20, 't':20, 'b':0})
 			# Create an st.empty() placeholder object to display our line chart (Redraw the chart in place anytime the X or Y-Axis bounds are updated)
 			redraw_chart = st.empty()
-			redraw_chart.write(master_fig)
 
 			# Combine the primary and secondary axis dataframes and remove any duplicate columns ('Hour' and 'Case Name')
 			# combined_case_chart_df used to calculate the x-axis upper and lower bounds and download chart data
@@ -310,9 +324,9 @@ if __name__ == '__main__':
 			
 			with download_chart_data_column:
 				chart_output_df = combined_case_chart_df.copy()
-				chart_output_df = chart_output_df.set_index('Case Name', append=True).unstack().swaplevel(0, 1, axis=1).sort_index(axis=1)
+				chart_output_df = chart_output_df.set_index('Case Name', append=True).unstack().swaplevel(0, 1, axis=1)
 				chart_output = chart_output_df.to_csv()
-				st.download_button(label='Download Chart Data', data=chart_output, use_container_width=True, file_name=f'multicase_line_chart_data.csv', key=f'line_chart_download_button_{case_name}')
+				st.download_button(label='Download Chart Data', data=chart_output, use_container_width=True, file_name=f'{case_name}_line_chart_data.csv', key=f'line_chart_download_button_{case_name}')
 
 #--------------------------------------------------------------------------------------------------#
 # 3. Streamlit Web App - Page Specific Configuration
@@ -413,7 +427,7 @@ if __name__ == '__main__':
 			  			</br>
 						To get NCP case data, first open the navigation menu on the left and press the <b>Fetch Case Data</b> button. Follow the instructions provided and select the NCP cases you wish to review and analyze:<br>
 						<ol>
-			  				<li>Select one of the 4 available network drive locations to retrieve NCP model results from (only 1 available in this demo)</li>
+			  				<li>Select one of the 4 available network drive locations to retrieve NCP model results from</li>
 			  				<li>Select the folder containing the NCP model results you would like to review and analyze</li>
 			  				<li>Filter out any NCP model result folders that are not required save</li>
 			  			</ol>
