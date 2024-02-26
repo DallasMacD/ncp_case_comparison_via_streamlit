@@ -57,6 +57,15 @@ if __name__ == '__main__':
 				st.session_state.case_list = list()
 				st.session_state.metric_list = list()
 				st.session_state.metric_agent_df = pd.DataFrame()
+				# Clear page specific Case Selection Session State variables
+				if 'line_chart_case_selection' in st.session_state:
+					st.session_state.line_chart_case_selection = None
+				if 'multi_line_chart_case_selection' in st.session_state:
+					st.session_state.multi_line_chart_case_selection = None
+				if 'bar_chart_case_selection' in st.session_state:
+					st.session_state.bar_chart_case_selection = None
+				if 'duration_curve_case_selection' in st.session_state:
+					st.session_state.duration_curve_case_selection = None
 				# Count number of cases in case_directory_dict to use when updating the data_progress_bar
 				case_count = len(case_directory_dict)
 				progress_interval = 0
@@ -110,6 +119,7 @@ if __name__ == '__main__':
 		st.session_state[agent_multiselect_key] = selected_agents_list
 		st.session_state[agent_session_state_key] = selected_agents_list
 	
+
 	def filter_metrics_df(case_multiselect_key: str, case_session_state_key: str, 
 					   	  metric_multiselect_key: str, metric_session_state_key: str, 
 						  agent_multiselect_key: str, agent_session_state_key: str,
@@ -136,8 +146,11 @@ if __name__ == '__main__':
 		# Using the Multiselect filters above, filter st.session_state.metrics_df and assign to the filtered_metrics_df Session State variables
 		# NOTE: st.session_state.metrics_df is a DataFrame containing the metrics from all selected NCP cases with Hour as the index and Case -> Metric Name -> Agent as the multiindex column levels
 		st.session_state[filtered_metrics_df_session_state_key] = st.session_state.metrics_df.loc[:, (st.session_state.metrics_df.columns.get_level_values(0).isin(st.session_state[case_multiselect_key])) & (st.session_state.metrics_df.columns.get_level_values(1).isin(st.session_state[metric_multiselect_key])) & (st.session_state.metrics_df.columns.get_level_values(2).isin(st.session_state[agent_multiselect_key] + ['']))]
-		# Sort column order in the order of Metric Names selected
+		# Sort column order in the order of Case Alias - Metric Names - Agent Names selected
+		st.session_state[filtered_metrics_df_session_state_key] = st.session_state[filtered_metrics_df_session_state_key].reindex(level=2, columns=st.session_state[agent_multiselect_key] + [''])
 		st.session_state[filtered_metrics_df_session_state_key] = st.session_state[filtered_metrics_df_session_state_key].reindex(level=1, columns=st.session_state[metric_multiselect_key])
+		st.session_state[filtered_metrics_df_session_state_key] = st.session_state[filtered_metrics_df_session_state_key].reindex(level=0, columns=st.session_state[case_multiselect_key])
+		
 
 	def define_initial_y_axis_bounds(min_value: float, max_value: float):
 		'''Create an initial set of Y-Axis bounds based on the minimum and maximum values to be plotted
@@ -173,6 +186,7 @@ if __name__ == '__main__':
 			upper_bound = math.ceil(max_value / difference_b10) * difference_b10
 		return lower_bound, upper_bound
 
+
 	def create_single_metric_duration_curve(df: pd.DataFrame):
 		'''Create a plotly line chart containing all NCP cases from the data supplied in the primary and secondary axis DataFrames
 		
@@ -184,20 +198,24 @@ if __name__ == '__main__':
 		
 		'''
 		# Return a copy of df with the Case multiindex column level converted into a separate column called "Case Name" and the Metric Name and Agent multiindex column levels flattened with the format "Metric Name [Agent]" (or only "Metric Name" for columns with no Agent)
+		case_name_index = df.columns.get_level_values(0).unique()
 		df = df.stack(level=0) # Move the Case (0) multiindex column level into the index (shifting Metric Name and Agent multiindex column levels from 1 -> 0 and 2 -> 1 respectivley)
+		df = df.reindex(level=1, index=case_name_index) # Reindex the Case Name index (level 1) to match the order before performing stack()
 		df.index.names = ['Hour', 'Case Name']
 		df = df.reset_index(level='Case Name')
 		df.columns = df.columns.map(lambda x: (f'{x[0]} [{x[1]}]') if x[1] != '' else (x[0])) # Metric Name (1), Agent (0)
 		metric_list = list(df.loc[:, df.columns != 'Case Name'].columns)
+		case_name_list = list(case_name_index)
 
 		# For each Metric-Agent combination provided in df, create a new subplot with Metric-Agent as the title
 		for metric_name in metric_list:
 			master_fig = make_subplots(subplot_titles=[f'<b>{metric_name}</b>'])
 			metric_df = df[['Case Name', metric_name]].copy()
 			metric_df = metric_df.reset_index().pivot(index='Hour', columns='Case Name', values=metric_name) # Pivot metric_df to get Hour as index and Case Names as columns
+			metric_df = metric_df.reindex(columns=case_name_index) # Reindex the Case Name index to match the order before performing pivot()
 			# Create an empty DataFrame with the various quantiles we would like to calculate and then populate using data from metric_df
 			quantile_df = pd.DataFrame(index=list(np.arange(0, 1.01, 0.01))).rename_axis(index='Quantiles')
-			for case_name in metric_df.columns:
+			for case_name in case_name_list:
 				quantile_df[case_name] = metric_df[case_name].quantile(list(np.arange(0, 1.01, 0.01)))
 			quantile_df.index = quantile_df.index * 100
 			quantile_df.index = quantile_df.index.astype(int)
@@ -214,7 +232,6 @@ if __name__ == '__main__':
 			master_fig.update_layout(margin={'l':20, 'r':20, 't':20, 'b':0})
 			# Create an st.empty() placeholder object to display our line chart (Redraw the chart in place anytime the X or Y-Axis bounds are updated)
 			redraw_chart = st.empty()
-			redraw_chart.write(master_fig)
 
 			# Calculate the Y-Axis upper and lower bounds
 			y_max = quantile_df.max().max()
@@ -323,7 +340,7 @@ if __name__ == '__main__':
 			  			</br>
 						To get NCP case data, first open the navigation menu on the left and press the <b>Fetch Case Data</b> button. Follow the instructions provided and select the NCP cases you wish to review and analyze:<br>
 						<ol>
-			  				<li>Select one of the 4 available network drive locations to retrieve NCP model results from (only 1 available in this demo)</li>
+			  				<li>Select one of the 4 available network drive locations to retrieve NCP model results from</li>
 			  				<li>Select the folder containing the NCP model results you would like to review and analyze</li>
 			  				<li>Filter out any NCP model result folders that are not required save</li>
 			  			</ol>
