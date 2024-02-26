@@ -334,7 +334,8 @@ def extract_run_parameters(directory: str):
 	
 	'''
 	# Read the dadger.grf file located in the selected folder to obtain the run start year/month, duration in hours and start date
-	file_path = f'{directory}\\dadger.grf'
+	# file_path = f'{directory}\\dadger.grf'
+	file_path = f'{directory}/dadger.grf'
 	# Check if file exists prior to opening
 	if os.path.isfile(file_path):
 		duration_in_hours = int(linecache.getline(filename=file_path, lineno=6).strip()[-5:])
@@ -352,7 +353,8 @@ def extract_run_time(directory: str):
 	
 	'''
 	# Read the last 20 lines of cpmodel.log line by line and search for "Total CPU Time:"
-	file_path = f'{directory}\\cpmodel.log'
+	# file_path = f'{directory}\\cpmodel.log'
+	file_path = f'{directory}/cpmodel.log'
 	# Check if file exists prior to opening
 	if os.path.isfile(file_path):
 		with open(file_path, 'r') as f:
@@ -384,7 +386,8 @@ def extract_convergences(directory: str):
 	
 	'''
 	# Read the ncpconv.csv file located in the selected folder to obtain the average and highest convergence interval gaps
-	file_path = f'{directory}\\ncpconv.csv'
+	# file_path = f'{directory}\\ncpconv.csv'
+	file_path = f'{directory}/ncpconv.csv'
 	# Check if file exists prior to opening
 	if os.path.isfile(file_path):
 		temp_df = pd.read_csv(file_path)
@@ -407,7 +410,8 @@ def extract_financials(directory: str):
 	
 	'''
 	# Read the ncpcope.csv file located in the selected folder to obtain the revenue, costs, violations and net revenue
-	file_path = f'{directory}\\ncpcope.csv'
+	# file_path = f'{directory}\\ncpcope.csv'
+	file_path = f'{directory}/ncpcope.csv'
 	# Check if file exists prior to opening
 	if os.path.isfile(file_path):
 		temp_df = pd.read_csv(file_path)
@@ -430,7 +434,8 @@ def extract_hydro_plant_parameters(directory: str):
 	# Create an empty placeholder DataFrame to store the plant number and plant name for each hydro plant
 	hydro_plant_parameters_df = pd.DataFrame(columns=['Plant Number', 'Plant Name'])
 	# Read the chidro01.dat file located in the selected folder to obtain the penstock max flow and alpha values
-	file_path = f'{directory}\\chidro01.dat'
+	# file_path = f'{directory}\\chidro01.dat'
+	file_path = f'{directory}/chidro01.dat'
 	# Check if file exists prior to opening
 	if os.path.isfile(file_path):
 		with open(file_path, 'r') as f:
@@ -439,7 +444,8 @@ def extract_hydro_plant_parameters(directory: str):
 				plant_name = line[5:18].strip()
 				hydro_plant_parameters_df.loc[len(hydro_plant_parameters_df.index)] = [plant_number, plant_name]
 		# Read data from penstock.dat and merge with the plant_parameter_inputs_df DataFrame
-		temp_df = pd.read_csv(f'{directory}\\penstock.dat', delim_whitespace=True).iloc[:, [1, 3, 4]]
+		# temp_df = pd.read_csv(f'{directory}\\penstock.dat', delim_whitespace=True).iloc[:, [1, 3, 4]]
+		temp_df = pd.read_csv(f'{directory}/penstock.dat', delim_whitespace=True).iloc[:, [1, 3, 4]]
 		temp_df.columns = ['Plant Number', 'Penstock Max Flow (m³/s)', 'Penstock Alpha']
 		hydro_plant_parameters_df = pd.merge(hydro_plant_parameters_df, temp_df, how='left', on='Plant Number')
 	return hydro_plant_parameters_df
@@ -473,7 +479,8 @@ def extract_hourly_inputs(directory: str, file_name: str, start_date: datetime.d
 	# Calculate the duration of the NCP case in days using the duration_in_hours
 	duration_in_days = duration_in_hours // 24
 	# Read the file located in the selected folder
-	file_path = f'{directory}\\{file_name}'
+	# file_path = f'{directory}\\{file_name}'
+	file_path = f'{directory}/{file_name}'
 	# Check if file exists prior to opening
 	if os.path.isfile(file_path):
 		# Retrieve the agent name and starting line values for each unique agent
@@ -521,7 +528,8 @@ def extract_csv_metrics(directory: str, case_name: str, csv_metrics_dict: dict):
 	csv_metrics_df = pd.DataFrame()
 	# Read each file specified in the csv_metrics_dict and store the results in the csv_metrics_df DataFrame
 	for metric, parameters in csv_metrics_dict.items():
-		file_path = f'{directory}\\{parameters["CSV File Name"]}'
+		# file_path = f'{directory}\\{parameters["CSV File Name"]}'
+		file_path = f'{directory}/{parameters["CSV File Name"]}'
 		# Check if file exists prior to opening
 		if os.path.isfile(file_path):
 			temp_df = pd.read_csv(file_path, skiprows=3, index_col=0).iloc[:, 2:]
@@ -739,14 +747,16 @@ def select_cases():
 	
 	'''
 	# Tkinter not working properly when deployed via Streamlit, therefore, automatically select the following cases
+	# case_directory_dict = {fr'Case 1\Jan\1941': os.path.join(os.path.dirname(os.path.dirname(__file__)), fr'NCP Cases\Case 1\Jan\1941'),
+	# 					fr'Case 2\Jan\1941': os.path.join(os.path.dirname(os.path.dirname(__file__)), fr'NCP Cases\Case 2\Jan\1941'),
+	# 					fr'Case 3\Jan\1941': os.path.join(os.path.dirname(os.path.dirname(__file__)), fr'NCP Cases\Case 3\Jan\1941'),
+	# 					fr'Case 4\Jan\1941': os.path.join(os.path.dirname(os.path.dirname(__file__)), fr'NCP Cases\Case 4\Jan\1941'),
+	# 					fr'Case 5\Jan\1941': os.path.join(os.path.dirname(os.path.dirname(__file__)), fr'NCP Cases\Case 5\Jan\1941')}
 	case_directory_dict = {fr'Case 1\Jan\1941': os.path.join(os.path.dirname(os.path.dirname(__file__)), fr'NCP Cases/Case 1/Jan/1941'),
 				fr'Case 2\Jan\1941': os.path.join(os.path.dirname(os.path.dirname(__file__)), fr'NCP Cases/Case 2/Jan/1941'),
 				fr'Case 3\Jan\1941': os.path.join(os.path.dirname(os.path.dirname(__file__)), fr'NCP Cases/Case 3/Jan/1941'),
 				fr'Case 4\Jan\1941': os.path.join(os.path.dirname(os.path.dirname(__file__)), fr'NCP Cases/Case 4/Jan/1941'),
 				fr'Case 5\Jan\1941': os.path.join(os.path.dirname(os.path.dirname(__file__)), fr'NCP Cases/Case 5/Jan/1941')}
-	
-	# print(os.path.join(os.path.dirname(os.path.dirname(__file__)), fr'NCP Cases\Case 1\Jan\1941'))
-	# print(fr'./NCP Cases/Case 1/Jan/1941')
 	
 	return case_directory_dict
 	
